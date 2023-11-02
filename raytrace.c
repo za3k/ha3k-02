@@ -42,7 +42,7 @@ static color surface_color(world here, sphere *obj, ray rr, vec point) {
   return normal;
 }
 
-static color trace(world here, ray rr)
+static color ray_color(world here, ray rr)
 {
   int ii;
   vec crap = { 0, 0, -0.5 };
@@ -81,36 +81,44 @@ encode_color(color co)
 
 /* Rendering */
 
-static color pixel_color(world here, int w, int h, int x, int y) {
+static ray get_ray(int w, int h, int x, int y) {
   // Camera is always at 0,0
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
   sc viewport_height = 2.0;
   sc focal_length = 0.5;
   sc viewport_width = viewport_height * aspect;
+
+  //sc pixel_width = (w / viewport_width);
+  //sc pixel_height = (h / viewport_height);
+
   vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), (0.5 - (double)y/h)*(viewport_height / 2.0), focal_length };
   ray rr = { {0}, normalize(pv) };
-  return trace(here, rr);
-}
 
-static void render_pixel(world here, int w, int h, int x, int y) {
-  encode_color(pixel_color(here, w, h, x, y));
+  return rr;
 }
 
 static void render(world here, int w, int h)
 {
+  int samples_per_pixel = 10;
+
   output_header(w, h);
   for (int i = 0; i < h; i++)
-    for (int j = 0; j < w; j++)
-      render_pixel(here, w, h, j, i);
+    for (int j = 0; j < w; j++) {
+      color pixel_color = {0, 0, 0};
+      for (int sample = 0; sample < samples_per_pixel; ++sample) {
+        ray rr = get_ray(w, h, j, i);
+        pixel_color = add(pixel_color, ray_color(here, rr));
+      }
+      encode_color(scale(pixel_color, 1.0/samples_per_pixel));
+    }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   sphere ss[4] = { 
     { .ma = { .co = {0, .5, 0} }, .r = 100, .cp = {0, -100, 5} }, // Ground
     { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
-    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
-    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
+    { .ma = { .co = {0, .5, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
+    { .ma = { .co = {0, 0, .5} }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
   };
   world here = { ss, 4 };
   render(here, 800, 600);
