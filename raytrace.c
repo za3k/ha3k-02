@@ -76,10 +76,15 @@ static void
 encode_color(color co)
 { putchar(byte(co.x)); putchar(byte(co.y)); putchar(byte(co.z)); }
 
-
+/* Rendering */
 
 static color pixel_color(world here, int w, int h, int x, int y) {
-  vec pv = { (double)x/w - 0.5, (double)y/h - 0.5, 1 };
+  // Camera is always at 0,0
+  // Viewport is -.5 
+  sc aspect = ((sc)w)/h; // Assume aspect >= 1
+  sc viewport_height = 1.0;
+  sc viewport_width = viewport_height * aspect;
+  vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), ((double)y/h - 0.5)*(viewport_height / 2.0), 1 };
   ray rr = { {0}, normalize(pv) };
   return trace(here, rr, 1.0);
 }
@@ -102,6 +107,6 @@ int main(int argc, char **argv)
     { .ma = { .co = {0, .5, 0} }, .r = 1, .cp = {0, 0, 5} }
   };
   world here = { ss, 1 };
-  render(here, 400, 400);
+  render(here, 800, 600);
   return 0;
 }
