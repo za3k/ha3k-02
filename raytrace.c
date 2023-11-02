@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Types */
 typedef float sc; // scalar
@@ -22,6 +23,8 @@ typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
 
 /* Ray-tracing */
+
+static sc random_double() { return rand() / (RAND_MAX + 1.0); } // [0, 1)
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
   vec center_rel = sub(rr.start, ss.cp);
@@ -81,17 +84,25 @@ encode_color(color co)
 
 /* Rendering */
 
+
 static ray get_ray(int w, int h, int x, int y) {
   // Camera is always at 0,0
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
   sc viewport_height = 2.0;
-  sc focal_length = 0.5;
+  sc focal_length = 0.5; // Z distance of viewport
   sc viewport_width = viewport_height * aspect;
 
-  //sc pixel_width = (w / viewport_width);
-  //sc pixel_height = (h / viewport_height);
+  sc pixel_width = (viewport_width / w);
+  sc pixel_height = (viewport_height / h);
+  sc left = viewport_width / -2.0;
+  sc top = viewport_height / 2.0;
 
-  vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), (0.5 - (double)y/h)*(viewport_height / 2.0), focal_length };
+  sc px = left + (pixel_width * x) /*-0.5 + random_double()*/;
+  sc py = top - (pixel_height * y) /*-0.5 + random_double()*/;
+
+  //fprintf(stderr, "%lf px %lf py %lf z\n", px, py, focal_length);
+
+  vec pv = { px, py, focal_length };
   ray rr = { {0}, normalize(pv) };
 
   return rr;
