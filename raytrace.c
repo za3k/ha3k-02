@@ -21,8 +21,6 @@ typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
 
-static color RED = { 255, 0, 0 };
-
 /* Ray-tracing */
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
@@ -37,7 +35,14 @@ static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
   return 1;
 }
 
-static color trace(world here, ray rr, sc importance)
+
+static color surface_color(world here, sphere *obj, ray rr, vec point) {
+  vec normal = normalize(sub(point, obj->cp));
+
+  return normal;
+}
+
+static color trace(world here, ray rr)
 {
   int ii;
   vec crap = { 0, 0, -0.5 };
@@ -53,10 +58,8 @@ static color trace(world here, ray rr, sc importance)
     }
   }
 
-  //if (debug_distance && nearest_object) return grey(nearest_t-floor(nearest_t));
-
   if (nearest_object) {
-    return RED;
+    return surface_color(here, nearest_object, rr, add(rr.start, scale(rr.dir, nearest_t)));
   }
 
   return normalize(add(crap, rr.dir));
@@ -80,13 +83,12 @@ encode_color(color co)
 
 static color pixel_color(world here, int w, int h, int x, int y) {
   // Camera is always at 0,0
-  // Viewport is -.5 
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
   sc viewport_height = 1.0;
   sc viewport_width = viewport_height * aspect;
   vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), ((double)y/h - 0.5)*(viewport_height / 2.0), 1 };
   ray rr = { {0}, normalize(pv) };
-  return trace(here, rr, 1.0);
+  return trace(here, rr);
 }
 
 static void render_pixel(world here, int w, int h, int x, int y) {
