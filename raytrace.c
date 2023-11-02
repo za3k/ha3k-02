@@ -16,7 +16,7 @@ static vec sub(vec aa, vec bb)  { return add(aa, scale(bb, -1)); }
 
 /* Ray-tracing types */
 typedef vec color;              // So as to reuse dot(vv,vv) and scale
-typedef struct { color co; sc reflectivity; char texture; } material;
+typedef struct { color co; sc absorbtion; sc reflectivity; } material;
 typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
@@ -84,9 +84,10 @@ encode_color(color co)
 static color pixel_color(world here, int w, int h, int x, int y) {
   // Camera is always at 0,0
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
-  sc viewport_height = 1.0;
+  sc viewport_height = 2.0;
+  sc focal_length = 0.5;
   sc viewport_width = viewport_height * aspect;
-  vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), ((double)y/h - 0.5)*(viewport_height / 2.0), 1 };
+  vec pv = { ((double)x/w - 0.5)*(viewport_width / 2.0), (0.5 - (double)y/h)*(viewport_height / 2.0), focal_length };
   ray rr = { {0}, normalize(pv) };
   return trace(here, rr);
 }
@@ -105,10 +106,11 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv)
 {
-  sphere ss[1] = { 
-    { .ma = { .co = {0, .5, 0} }, .r = 1, .cp = {0, 0, 5} }
+  sphere ss[2] = { 
+    { .ma = { .co = {0, .5, 0} }, .r = 100, .cp = {0, -100, 5} }, // Ground
+    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere
   };
-  world here = { ss, 1 };
+  world here = { ss, 2 };
   render(here, 800, 600);
   return 0;
 }
