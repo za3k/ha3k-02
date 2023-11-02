@@ -97,8 +97,8 @@ static ray get_ray(int w, int h, int x, int y) {
   sc left = viewport_width / -2.0;
   sc top = viewport_height / 2.0;
 
-  sc px = left + (pixel_width * x) /*-0.5 + random_double()*/;
-  sc py = top - (pixel_height * y) /*-0.5 + random_double()*/;
+  sc px = left + (pixel_width * (x + random_double()));
+  sc py = top - (pixel_height * (y + random_double()));
 
   //fprintf(stderr, "%lf px %lf py %lf z\n", px, py, focal_length);
 
