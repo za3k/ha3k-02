@@ -106,11 +106,13 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv)
 {
-  sphere ss[2] = { 
+  sphere ss[4] = { 
     { .ma = { .co = {0, .5, 0} }, .r = 100, .cp = {0, -100, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere
+    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
+    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
+    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
   };
-  world here = { ss, 2 };
+  world here = { ss, 4 };
   render(here, 800, 600);
   return 0;
 }
