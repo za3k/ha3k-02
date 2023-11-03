@@ -15,10 +15,11 @@ static vec normalize(vec vv)    { return scale(vv, 1/sqrt(dot(vv, vv))); }
 static vec add(vec aa, vec bb)  { vec rv = { aa.x+bb.x, aa.y+bb.y, aa.z+bb.z }; return rv; }
 static vec sub(vec aa, vec bb)  { return add(aa, scale(bb, -1)); }
 static vec hadamard_product(vec aa, vec bb) { vec rv = { aa.x*bb.x, aa.y*bb.y, aa.z*bb.z }; return rv; }
+static sc dist(vec aa, vec bb)  { return sqrt(magsq(sub(aa,bb))); }
 
 /* Ray-tracing types */
 typedef vec color;              // So as to reuse dot(vv,vv) and scale
-typedef struct { color co; color albedo; sc reflectivity; sc fuzz; } material;
+typedef struct { color albedo; sc reflectivity; sc fuzz; } material;
 typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
@@ -37,6 +38,8 @@ static vec random_in_unit_sphere() {
     }
 }
 static vec random_unit_vector() { return normalize(random_in_unit_sphere()); }
+
+static color random_color() { return random_vec(); }
 
 /* Ray-tracing */
 
@@ -62,12 +65,14 @@ static color surface_color(world here, sphere *obj, ray rr, vec point, int depth
 
   ray bounce = { point };
   if (obj->ma.reflectivity == 0) { // Matte, regular scattering
-    bounce.dir = normalize(add(normal, random_unit_vector()));
+    bounce.dir = add(normal, random_unit_vector());
   } else { // Reflective metal scattering
     vec reflected = reflect(rr.dir, normal);
-    bounce.dir = normalize(add(reflected, scale(random_unit_vector(), obj->ma.fuzz)));
+    bounce.dir = add(reflected, scale(random_unit_vector(), obj->ma.fuzz));
     if (dot(bounce.dir, normal) < 0) return BLACK;
   }
+  if (magsq(bounce.dir) < 0.0000001) return BLACK;
+  bounce.dir = normalize(bounce.dir);
   return hadamard_product(ray_color(here, bounce, depth-1), obj->ma.albedo);
 }
 
@@ -143,7 +148,7 @@ static ray get_ray(int w, int h, int x, int y) {
 
 static void render(world here, int w, int h)
 {
-  int samples_per_pixel = 100;
+  int samples_per_pixel = 1000;
   int max_bounces = 50;
 
   output_header(w, h);
@@ -159,13 +164,31 @@ static void render(world here, int w, int h)
 }
 
 int main(int argc, char **argv) {
-  sphere ss[4] = { 
-    { .ma = { .co = {0, .5, 0}, .albedo = {0.5, 0.5, 0.5} }, .r = 100, .cp = {0, -101, 5} }, // Ground
-    { .ma = { .co = {0, .5, 0}, .albedo = {0.7, 0.7, 0.7}, .reflectivity = 1.0, .fuzz = 0.3 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1, reflective (fuzzier)
-    { .ma = { .co = {.5, 0, 0}, .albedo = {0.4, 0.2, 0.1} }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2, matte brown
-    { .ma = { .co = {0, 0, .5}, .albedo = {0.5, 0.5, 0.5}, .reflectivity = 1.0, }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3, reflective
+  sc ALT = -2.0;
+  sphere ss[600] = { 
+    { .ma = { .albedo = {0.5, 0.5, 0.5} }, .r = 1000, .cp = {0, -1000+ALT, 5} }, // Ground
+    { .ma = { .albedo = {0.7, 0.7, 0.7}, .reflectivity = 1.0, .fuzz = 0.3 }, .r = 1, .cp = {-2, ALT+1.0, 5} }, // Sphere 1, reflective (fuzzier)
+    { .ma = { .albedo = {0.4, 0.2, 0.1} }, .r = 1, .cp = {0, ALT+1.0, 5} }, // Sphere 2, matte brown
+    { .ma = { .albedo = {0.5, 0.5, 0.5}, .reflectivity = 1.0, }, .r = 1, .cp = {2, ALT+1.0, 5} }, // Sphere 3, reflective
   };
-  world here = { ss, 4 };
+  int spheres = 4;
+  for (int a=-11; a<=11; a++) {
+    for (int b=-11; b<=11; b++) {
+      // Add a sphere
+      sc RAD = 0.2;
+      vec center = { a + 0.9*random_double(), ALT+RAD, b + 0.9*random_double() };
+      if (dist(center, ss[1].cp) > 1.3 && dist(center, ss[3].cp) > 1.3) {
+        ss[spheres].cp = center;
+        ss[spheres].r = RAD;
+        ss[spheres].ma.reflectivity = 0;
+        ss[spheres].ma.reflectivity = random_double() > 0.8;
+        ss[spheres].ma.albedo = random_color();
+        ss[spheres].ma.fuzz = random_double();
+        spheres++;
+      }
+    }
+  }
+  world here = { ss, spheres };
   render(here, 800, 600);
   return 0;
 }
