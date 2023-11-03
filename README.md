@@ -36,7 +36,7 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 <img src="v10.png"> (100s/pix)
 ---
 ### Shift camera slightly to not intersect the ground
-<img src="v11.png"> (10s/pix) <br> <img src="v11a.png"> (100s/pix) <br> <img src="v11b.png"> (1000s/pix)
+<img src="v11a.png"> (100s/pix)
 ---
 ### Gamma correction
 <img src="v12.png"> (100s/pix)
