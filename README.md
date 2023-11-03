@@ -20,7 +20,7 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 ### Add spheres
 <img src="v05.png"> (1s/pix)
 ---
-### Add antialiasing
+### Add antialiasing (and accidentally zoom out)
 <img src="v06.png"> (10s/pix)
 ---
 ### Add sky color
@@ -29,7 +29,7 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 ### Add diffusion
 <img src="v08.png"> (10s/pix)
 ---
-### Make diffusion more directional (Lambertian diffusion)
+### Make diffusion more directional (Lambertian diffusion) and zoom back in
 <img src="v09.png"> (10s/pix)
 ---
 ### Increase (10x) random samples per pixel
@@ -51,4 +51,4 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 <img src="v15a.png"> (1s/pix, 2s) <br>
 <img src="v15.png"> (10s/pix, 20s) <br>
 <img src="v15b.png"> (100s/pix, 3m24s)<br>
-<img src="v15c.png"> (100s/pix, 33m)
+<img src="v15c.png"> (1000s/pix, 33m)
