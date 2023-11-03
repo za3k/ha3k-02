@@ -5,19 +5,19 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 
 ## Raytracing Progress
 
-### Basics
+### Basics (one sphere, on/off color)
 <img src="v01.png"> (1s/pix)
 ---
 ### Rectangular Viewport
 <img src="v02.png"> (1s/pix)
 ---
-### Normal coloring
+### Basic coloring based on position ("normals")
 <img src="v03.png"> (1s/pix)
 ---
-### Add ground
+### Add ground (a big sphere)
 <img src="v04.png"> (1s/pix)
 ---
-### Add spheres
+### Add more spheres
 <img src="v05.png"> (1s/pix)
 ---
 ### Add antialiasing (and accidentally zoom out)
