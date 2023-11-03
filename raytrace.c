@@ -14,10 +14,11 @@ static vec scale(vec vv, sc c)  { vec rv = { vv.x*c, vv.y*c, vv.z*c }; return rv
 static vec normalize(vec vv)    { return scale(vv, 1/sqrt(dot(vv, vv))); }
 static vec add(vec aa, vec bb)  { vec rv = { aa.x+bb.x, aa.y+bb.y, aa.z+bb.z }; return rv; }
 static vec sub(vec aa, vec bb)  { return add(aa, scale(bb, -1)); }
+static vec hadamard_product(vec aa, vec bb) { vec rv = { aa.x*bb.x, aa.y*bb.y, aa.z*bb.z }; return rv; }
 
 /* Ray-tracing types */
 typedef vec color;              // So as to reuse dot(vv,vv) and scale
-typedef struct { color co; sc albedo; sc reflectivity; } material;
+typedef struct { color co; color albedo; sc reflectivity; } material;
 typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
@@ -54,7 +55,7 @@ static color surface_color(world here, sphere *obj, ray rr, vec point, int depth
   vec normal = normalize(sub(point, obj->cp));
   ray bounce = { point, normalize(add(normal, random_unit_vector())) };
   if (depth <= 0) return BLACK;
-  return scale(ray_color(here, bounce, depth-1), obj->ma.albedo);
+  return hadamard_product(ray_color(here, bounce, depth-1), obj->ma.albedo);
 }
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
@@ -106,7 +107,6 @@ encode_color(color co)
 
 /* Rendering */
 
-
 static ray get_ray(int w, int h, int x, int y) {
   // Camera is always at 0,0
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
@@ -147,10 +147,10 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv) {
   sphere ss[4] = { 
-    { .ma = { .co = {0, .5, 0}, .albedo = 0.5 }, .r = 100, .cp = {0, -101, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0}, .albedo = 0.9 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1
-    { .ma = { .co = {0, .5, 0}, .albedo = 0.7 }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
-    { .ma = { .co = {0, 0, .5}, .albedo = 0.5 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
+    { .ma = { .co = {0, .5, 0}, .albedo = {0.5, 0.5, 0.5} }, .r = 100, .cp = {0, -101, 5} }, // Ground
+    { .ma = { .co = {.5, 0, 0}, .albedo = {0.4, 0.2, 0.1} }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1, matte brown
+    { .ma = { .co = {0, .5, 0}, .albedo = {0.7, 0.7, 0.7} }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
+    { .ma = { .co = {0, 0, .5}, .albedo = {0.5, 0.5, 0.5}, .reflectivity = 1.0 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
   };
   world here = { ss, 4 };
   render(here, 800, 600);
