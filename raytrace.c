@@ -22,9 +22,47 @@ typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
 
-/* Ray-tracing */
+/* Random sampling */
 
 static sc random_double() { return rand() / (RAND_MAX + 1.0); } // [0, 1)
+static vec random_vec() {
+    vec v = { random_double(), random_double(), random_double() };
+    return v;
+}
+static vec random_in_unit_sphere() {
+    while (1) {
+        vec v = random_vec();
+        if (magsq(v) < 1) return v;
+    }
+}
+static vec random_unit_vector() { return normalize(random_in_unit_sphere()); }
+static vec random_on_hemisphere(vec normal) {
+    vec on_unit_sphere = random_unit_vector();
+    if (dot(on_unit_sphere, normal) > 0.0) return on_unit_sphere;
+    else return scale(on_unit_sphere, -1.0);
+}
+
+/* Ray-tracing */
+
+static color BLACK = {0, 0, 0};
+static color WHITE = {1.0, 1.0, 1.0};
+static color BLUE = {0.5, 0.7, 1.0};
+
+static color sky_color(ray rr) {
+  sc a = 0.5 * (rr.dir.y + 1);
+  return add(scale(WHITE, 1.0-a), scale(BLUE, a));
+}
+
+static color ray_color(world here, ray rr, int depth);
+
+static color surface_color(world here, sphere *obj, ray rr, vec point, int depth) {
+  vec normal = normalize(sub(point, obj->cp));
+  return normal;
+  //ray bounce = { point, random_on_hemisphere(normal) };
+  //if (depth <= 0) return BLACK;
+  //return scale(ray_color(here, bounce, depth-1), 0.5);
+}
+
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
   vec center_rel = sub(rr.start, ss.cp);
@@ -38,34 +76,25 @@ static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
   return 1;
 }
 
-
-static color surface_color(world here, sphere *obj, ray rr, vec point) {
-  vec normal = normalize(sub(point, obj->cp));
-
-  return normal;
-}
-
-static color ray_color(world here, ray rr)
+static color ray_color(world here, ray rr, int depth)
 {
-  int ii;
-  vec crap = { 0, 0, -0.5 };
   sc intersection;
   sc nearest_t = 1/.0;
   sphere *nearest_object = 0;
 
-  for (ii = 0; ii < here.nn; ii++) {
-    if (find_nearest_intersection(rr, here.spheres[ii], &intersection)) {
+  for (int i = 0; i < here.nn; i++) {
+    if (find_nearest_intersection(rr, here.spheres[i], &intersection)) {
       if (intersection < 0 || intersection >= nearest_t) continue;
       nearest_t = intersection;
-      nearest_object = &here.spheres[ii];
+      nearest_object = &here.spheres[i];
     }
   }
 
   if (nearest_object) {
-    return surface_color(here, nearest_object, rr, add(rr.start, scale(rr.dir, nearest_t)));
+    return surface_color(here, nearest_object, rr, add(rr.start, scale(rr.dir, nearest_t)), depth);
   }
 
-  return normalize(add(crap, rr.dir));
+  return sky_color(rr);
 }
 
 /* PPM6 */
@@ -111,6 +140,7 @@ static ray get_ray(int w, int h, int x, int y) {
 static void render(world here, int w, int h)
 {
   int samples_per_pixel = 10;
+  int max_bounces = 5;
 
   output_header(w, h);
   for (int i = 0; i < h; i++)
@@ -118,7 +148,7 @@ static void render(world here, int w, int h)
       color pixel_color = {0, 0, 0};
       for (int sample = 0; sample < samples_per_pixel; ++sample) {
         ray rr = get_ray(w, h, j, i);
-        pixel_color = add(pixel_color, ray_color(here, rr));
+        pixel_color = add(pixel_color, ray_color(here, rr, max_bounces));
       }
       encode_color(scale(pixel_color, 1.0/samples_per_pixel));
     }
