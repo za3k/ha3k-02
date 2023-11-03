@@ -18,7 +18,7 @@ static vec hadamard_product(vec aa, vec bb) { vec rv = { aa.x*bb.x, aa.y*bb.y, a
 
 /* Ray-tracing types */
 typedef vec color;              // So as to reuse dot(vv,vv) and scale
-typedef struct { color co; color albedo; sc reflectivity; } material;
+typedef struct { color co; color albedo; sc reflectivity; sc fuzz; } material;
 typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
@@ -51,10 +51,23 @@ static color sky_color(ray rr) {
 
 static color ray_color(world here, ray rr, int depth);
 
+static vec reflect(vec incoming, vec normal) {
+    return sub(incoming, scale(normal, dot(incoming,normal)*2));
+}
+
 static color surface_color(world here, sphere *obj, ray rr, vec point, int depth) {
-  vec normal = normalize(sub(point, obj->cp));
-  ray bounce = { point, normalize(add(normal, random_unit_vector())) };
   if (depth <= 0) return BLACK;
+
+  vec normal = normalize(sub(point, obj->cp));
+
+  ray bounce = { point };
+  if (obj->ma.reflectivity == 0) { // Matte, regular scattering
+    bounce.dir = normalize(add(normal, random_unit_vector()));
+  } else { // Reflective metal scattering
+    vec reflected = reflect(rr.dir, normal);
+    bounce.dir = normalize(add(reflected, scale(random_unit_vector(), obj->ma.fuzz)));
+    if (dot(bounce.dir, normal) < 0) return BLACK;
+  }
   return hadamard_product(ray_color(here, bounce, depth-1), obj->ma.albedo);
 }
 
@@ -148,9 +161,9 @@ static void render(world here, int w, int h)
 int main(int argc, char **argv) {
   sphere ss[4] = { 
     { .ma = { .co = {0, .5, 0}, .albedo = {0.5, 0.5, 0.5} }, .r = 100, .cp = {0, -101, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0}, .albedo = {0.4, 0.2, 0.1} }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1, matte brown
-    { .ma = { .co = {0, .5, 0}, .albedo = {0.7, 0.7, 0.7} }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
-    { .ma = { .co = {0, 0, .5}, .albedo = {0.5, 0.5, 0.5}, .reflectivity = 1.0 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
+    { .ma = { .co = {0, .5, 0}, .albedo = {0.7, 0.7, 0.7}, .reflectivity = 1.0, .fuzz = 0.3 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1, reflective (fuzzier)
+    { .ma = { .co = {.5, 0, 0}, .albedo = {0.4, 0.2, 0.1} }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2, matte brown
+    { .ma = { .co = {0, 0, .5}, .albedo = {0.5, 0.5, 0.5}, .reflectivity = 1.0, }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3, reflective
   };
   world here = { ss, 4 };
   render(here, 800, 600);
