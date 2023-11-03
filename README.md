@@ -14,10 +14,7 @@ aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-fir
 ### Basic coloring based on position ("normals")
 <img src="v03.png"> (1s/pix)
 ---
-### Add ground (a big sphere)
-<img src="v04.png"> (1s/pix)
----
-### Add more spheres
+### Add ground (a big sphere) and two more spheres
 <img src="v05.png"> (1s/pix)
 ---
 ### Add antialiasing (and accidentally zoom out)
