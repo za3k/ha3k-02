@@ -130,7 +130,7 @@ static ray get_ray(int w, int h, int x, int y) {
 
 static void render(world here, int w, int h)
 {
-  int samples_per_pixel = 10;
+  int samples_per_pixel = 100;
   int max_bounces = 50;
 
   output_header(w, h);
