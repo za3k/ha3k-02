@@ -82,7 +82,7 @@ static color ray_color(world here, ray rr, int depth)
 
   for (int i = 0; i < here.nn; i++) {
     if (find_nearest_intersection(rr, here.spheres[i], &intersection)) {
-      if (intersection < 0 || intersection >= nearest_t) continue;
+      if (intersection < 0.000001 || intersection >= nearest_t) continue;
       nearest_t = intersection;
       nearest_object = &here.spheres[i];
     }
@@ -116,7 +116,7 @@ static ray get_ray(int w, int h, int x, int y) {
   // Camera is always at 0,0
   sc aspect = ((sc)w)/h; // Assume aspect >= 1
   sc viewport_height = 2.0;
-  sc focal_length = 0.5; // Z distance of viewport
+  sc focal_length = 1.0; // Z distance of viewport
   sc viewport_width = viewport_height * aspect;
 
   sc pixel_width = (viewport_width / w);
