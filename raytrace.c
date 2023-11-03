@@ -17,7 +17,7 @@ static vec sub(vec aa, vec bb)  { return add(aa, scale(bb, -1)); }
 
 /* Ray-tracing types */
 typedef vec color;              // So as to reuse dot(vv,vv) and scale
-typedef struct { color co; sc absorbtion; sc reflectivity; } material;
+typedef struct { color co; sc albedo; sc reflectivity; } material;
 typedef struct { vec cp; material ma; sc r; } sphere;
 typedef struct { sphere *spheres; int nn; } world;
 typedef struct { vec start; vec dir; } ray; // dir is normalized!
@@ -54,7 +54,7 @@ static color surface_color(world here, sphere *obj, ray rr, vec point, int depth
   vec normal = normalize(sub(point, obj->cp));
   ray bounce = { point, normalize(add(normal, random_unit_vector())) };
   if (depth <= 0) return BLACK;
-  return scale(ray_color(here, bounce, depth-1), (1.0-obj->ma.absorbtion));
+  return scale(ray_color(here, bounce, depth-1), obj->ma.albedo);
 }
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
@@ -130,7 +130,7 @@ static ray get_ray(int w, int h, int x, int y) {
 
 static void render(world here, int w, int h)
 {
-  int samples_per_pixel = 100;
+  int samples_per_pixel = 10;
   int max_bounces = 50;
 
   output_header(w, h);
@@ -147,10 +147,10 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv) {
   sphere ss[4] = { 
-    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.5 }, .r = 100, .cp = {0, -101, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0}, .absorbtion = 0.1 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1
-    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.3 }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
-    { .ma = { .co = {0, 0, .5}, .absorbtion = 0.5 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
+    { .ma = { .co = {0, .5, 0}, .albedo = 0.5 }, .r = 100, .cp = {0, -101, 5} }, // Ground
+    { .ma = { .co = {.5, 0, 0}, .albedo = 0.9 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1
+    { .ma = { .co = {0, .5, 0}, .albedo = 0.7 }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
+    { .ma = { .co = {0, 0, .5}, .albedo = 0.5 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
   };
   world here = { ss, 4 };
   render(here, 800, 600);
