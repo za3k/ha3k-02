@@ -130,8 +130,8 @@ static ray get_ray(int w, int h, int x, int y) {
 
 static void render(world here, int w, int h)
 {
-  int samples_per_pixel = 10;
-  int max_bounces = 10;
+  int samples_per_pixel = 100;
+  int max_bounces = 50;
 
   output_header(w, h);
   for (int i = 0; i < h; i++)
@@ -147,10 +147,10 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv) {
   sphere ss[4] = { 
-    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.5 }, .r = 100, .cp = {0, -100, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0}, .absorbtion = 0.1 }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
-    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.3 }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
-    { .ma = { .co = {0, 0, .5}, .absorbtion = 0.5 }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
+    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.5 }, .r = 100, .cp = {0, -101, 5} }, // Ground
+    { .ma = { .co = {.5, 0, 0}, .absorbtion = 0.1 }, .r = 1, .cp = {-2, 0, 5} }, // Sphere 1
+    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.3 }, .r = 1, .cp = {0, 0, 5} }, // Sphere 2
+    { .ma = { .co = {0, 0, .5}, .absorbtion = 0.5 }, .r = 1, .cp = {2, 0, 5} }, // Sphere 3
   };
   world here = { ss, 4 };
   render(here, 800, 600);
