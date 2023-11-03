@@ -41,7 +41,7 @@ static vec random_unit_vector() { return normalize(random_in_unit_sphere()); }
 
 static color BLACK = {0, 0, 0};
 static color WHITE = {1.0, 1.0, 1.0};
-static color BLUE = {0.5, 0.7, 1.0};
+static color BLUE = {0.25, 0.49, 1.0};
 
 static color sky_color(ray rr) {
   sc a = 0.5 * (rr.dir.y + 1);
@@ -102,7 +102,7 @@ byte(double dd) { return dd > 1 ? 255 : dd < 0 ? 0 : dd * 255 + 0.5; }
 
 static void
 encode_color(color co)
-{ putchar(byte(co.x)); putchar(byte(co.y)); putchar(byte(co.z)); }
+{ putchar(byte(sqrt(co.x))); putchar(byte(sqrt(co.y))); putchar(byte(sqrt(co.z))); }
 
 /* Rendering */
 
