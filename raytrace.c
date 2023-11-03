@@ -57,12 +57,10 @@ static color ray_color(world here, ray rr, int depth);
 
 static color surface_color(world here, sphere *obj, ray rr, vec point, int depth) {
   vec normal = normalize(sub(point, obj->cp));
-  return normal;
-  //ray bounce = { point, random_on_hemisphere(normal) };
-  //if (depth <= 0) return BLACK;
-  //return scale(ray_color(here, bounce, depth-1), 0.5);
+  ray bounce = { point, random_on_hemisphere(normal) };
+  if (depth <= 0) return BLACK;
+  return scale(ray_color(here, bounce, depth-1), (1.0-obj->ma.absorbtion));
 }
-
 
 static bool find_nearest_intersection(ray rr, sphere ss, sc *intersection) {
   vec center_rel = sub(rr.start, ss.cp);
@@ -140,7 +138,7 @@ static ray get_ray(int w, int h, int x, int y) {
 static void render(world here, int w, int h)
 {
   int samples_per_pixel = 10;
-  int max_bounces = 5;
+  int max_bounces = 10;
 
   output_header(w, h);
   for (int i = 0; i < h; i++)
@@ -157,9 +155,9 @@ static void render(world here, int w, int h)
 int main(int argc, char **argv) {
   sphere ss[4] = { 
     { .ma = { .co = {0, .5, 0} }, .r = 100, .cp = {0, -100, 5} }, // Ground
-    { .ma = { .co = {.5, 0, 0} }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
-    { .ma = { .co = {0, .5, 0} }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
-    { .ma = { .co = {0, 0, .5} }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
+    { .ma = { .co = {.5, 0, 0}, .absorbtion = 0.1 }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
+    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.3 }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
+    { .ma = { .co = {0, 0, .5}, .absorbtion = 0.5 }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
   };
   world here = { ss, 4 };
   render(here, 800, 600);
