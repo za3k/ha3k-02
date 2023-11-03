@@ -36,11 +36,6 @@ static vec random_in_unit_sphere() {
     }
 }
 static vec random_unit_vector() { return normalize(random_in_unit_sphere()); }
-static vec random_on_hemisphere(vec normal) {
-    vec on_unit_sphere = random_unit_vector();
-    if (dot(on_unit_sphere, normal) > 0.0) return on_unit_sphere;
-    else return scale(on_unit_sphere, -1.0);
-}
 
 /* Ray-tracing */
 
@@ -57,7 +52,7 @@ static color ray_color(world here, ray rr, int depth);
 
 static color surface_color(world here, sphere *obj, ray rr, vec point, int depth) {
   vec normal = normalize(sub(point, obj->cp));
-  ray bounce = { point, random_on_hemisphere(normal) };
+  ray bounce = { point, normalize(add(normal, random_unit_vector())) };
   if (depth <= 0) return BLACK;
   return scale(ray_color(here, bounce, depth-1), (1.0-obj->ma.absorbtion));
 }
@@ -127,8 +122,6 @@ static ray get_ray(int w, int h, int x, int y) {
   sc px = left + (pixel_width * (x + random_double()));
   sc py = top - (pixel_height * (y + random_double()));
 
-  //fprintf(stderr, "%lf px %lf py %lf z\n", px, py, focal_length);
-
   vec pv = { px, py, focal_length };
   ray rr = { {0}, normalize(pv) };
 
@@ -154,7 +147,7 @@ static void render(world here, int w, int h)
 
 int main(int argc, char **argv) {
   sphere ss[4] = { 
-    { .ma = { .co = {0, .5, 0} }, .r = 100, .cp = {0, -100, 5} }, // Ground
+    { .ma = { .co = {0, .5, 0}, .absorbtion = 0.5 }, .r = 100, .cp = {0, -100, 5} }, // Ground
     { .ma = { .co = {.5, 0, 0}, .absorbtion = 0.1 }, .r = 1, .cp = {-2, 1, 5} }, // Sphere 1
     { .ma = { .co = {0, .5, 0}, .absorbtion = 0.3 }, .r = 1, .cp = {0, 1, 5} }, // Sphere 2
     { .ma = { .co = {0, 0, .5}, .absorbtion = 0.5 }, .r = 1, .cp = {2, 1, 5} }, // Sphere 3
