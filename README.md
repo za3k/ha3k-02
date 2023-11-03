@@ -4,11 +4,8 @@ Based on a [raytracer](http://canonical.org/~kragen/sw/aspmisc/raytracer.c) writ
 aytracer written by [kragen](http://canonical.org/~kragen/sw/aspmisc/my-very-first-raytracer.html); and on [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) by Peter Shirley, Trevor David Black, Steve Hollasch.
 
 ## Raytracing Progress
-
-### Basics (one sphere, on/off color)
-<img src="v01.png"> (1s/pix)
 ---
-### Rectangular Viewport
+### Basics (one sphere, on/off color), Rectangular viewport
 <img src="v02.png"> (1s/pix)
 ---
 ### Basic coloring based on position ("normals")
