@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 /* Types */
-typedef float sc; // scalar
+typedef double sc; // scalar
 typedef struct { sc x, y, z; } vec;
 typedef int bool;
 
@@ -148,7 +148,7 @@ static ray get_ray(int w, int h, int x, int y) {
 
 static void render(world here, int w, int h)
 {
-  int samples_per_pixel = 1000;
+  int samples_per_pixel = 100;
   int max_bounces = 50;
 
   output_header(w, h);
